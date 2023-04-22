@@ -51,13 +51,17 @@ class SmallViT(pl.LightningModule):
         )
 
         self.train_top1_acc = Accuracy(num_classes=self.num_classes,
-                                       top_k=1)
+                                       top_k=1,
+                                       task="multiclass")
         self.train_top5_acc = Accuracy(num_classes=self.num_classes,
-                                       top_k=5)
+                                       top_k=5,
+                                       task="multiclass")
         self.val_top1_acc = Accuracy(num_classes=self.num_classes,
-                                     top_k=1)
+                                     top_k=1,
+                                     task="multiclass")
         self.val_top5_acc = Accuracy(num_classes=self.num_classes,
-                                     top_k=5)
+                                     top_k=5,
+                                     task="multiclass")
 
         self.train_loss = None
         self.val_loss = None
