@@ -1,9 +1,9 @@
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from torchmetrics import Accuracy
-import pytorch_lightning as pl
+
 from utils import image_to_patch
 
 

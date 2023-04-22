@@ -1,17 +1,27 @@
+import argparse
+import os
+import ssl
+
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import CIFAR10
-from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning import Trainer
-import pytorch_lightning as pl
-import ssl
+
 from model import SmallViT
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
 pl.seed_everything(42)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--wandb_api_key", type=str, required=True)
+args = vars(parser.parse_args())
+
+os.environ["WANDB_API_KEY"] = args.get("wandb_api_key")
 
 train_transform = transforms.Compose(
     [
