@@ -112,6 +112,9 @@ class SmallViT(pl.LightningModule):
 
         loss = F.cross_entropy(preds, labels)
         self.val_loss = loss.item()
+        
+        self.val_top1_acc(preds, labels)
+        self.val_top5_acc(preds, labels)
 
         self.log(self.VAL_LOSS_KEY, loss)
         self.log(self.VAL_TOP1_ACC_KEY, self.val_top1_acc)
