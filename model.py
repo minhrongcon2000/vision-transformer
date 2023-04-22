@@ -7,7 +7,7 @@ from torchmetrics import Accuracy
 from utils import image_to_patch
 
 
-class SmallViT(pl.LightningModule):
+class ViT(pl.LightningModule):
     TRAIN_LOSS_KEY = "train_loss"
     TRAIN_TOP1_ACC_KEY = "train_top1_acc"
     TRAIN_TOP5_ACC_KEY = "train_top5_acc"
@@ -21,23 +21,29 @@ class SmallViT(pl.LightningModule):
                  num_channels: int,
                  patch_size: int,
                  num_patches: int,
-                 num_classes: int) -> None:
+                 num_classes: int,
+                 dim_feedforward: int,
+                 num_heads: int,
+                 num_transformer_block: int) -> None:
         super().__init__()
         self.embed_dim = embed_dim
         self.num_channels = num_channels
         self.patch_size = patch_size
         self.num_patches = num_patches
         self.num_classes = num_classes
+        self.dim_feedforward = dim_feedforward
+        self.num_heads = num_heads
+        self.num_transformer_block = num_transformer_block
 
         self.input_layer = nn.Linear(
             self.patch_size * self.patch_size * self.num_channels, self.embed_dim)
 
         self.transformer = nn.TransformerEncoder(
             encoder_layer=nn.TransformerEncoderLayer(d_model=self.embed_dim,
-                                                     nhead=8,
-                                                     dim_feedforward=512,
+                                                     nhead=self.num_heads,
+                                                     dim_feedforward=self.dim_feedforward,
                                                      activation=F.gelu),
-            num_layers=4,
+            num_layers=self.num_transformer_block,
         )
 
         self.cls_token = nn.Parameter(torch.randn(1, 1, self.embed_dim))
@@ -112,7 +118,7 @@ class SmallViT(pl.LightningModule):
 
         loss = F.cross_entropy(preds, labels)
         self.val_loss = loss.item()
-        
+
         self.val_top1_acc(preds, labels)
         self.val_top5_acc(preds, labels)
 
@@ -132,6 +138,6 @@ class SmallViT(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    model = SmallViT(256, 3, 8, 16 + 1, 10)
+    model = ViT(256, 3, 8, 16 + 1, 10)
     img = torch.rand(16, 3, 32, 32)
     print(model(img).shape)

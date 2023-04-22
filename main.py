@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import CIFAR100
 
-from model import SmallViT
+from model import ViT
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -60,18 +60,21 @@ val_loader = DataLoader(val_dataset,
                         shuffle=False,
                         num_workers=4)
 
-model = SmallViT(embed_dim=256,
-                 num_channels=3,
-                 patch_size=8,
-                 num_patches=17,
-                 num_classes=100)
+model = ViT(embed_dim=1024,
+            num_channels=3,
+            patch_size=16,
+            num_patches=4,
+            num_classes=100,
+            num_heads=16,
+            dim_feedforward=4096,
+            num_transformer_block=24)
 
 pl_trainer = Trainer(accelerator="gpu",
                      max_epochs=100,
                      enable_progress_bar=False,
                      callbacks=[
                          ModelCheckpoint("chkpt",
-                                         monitor=SmallViT.VAL_TOP1_ACC_KEY,
+                                         monitor=ViT.VAL_TOP1_ACC_KEY,
                                          mode="max"),
                      ],
                      logger=WandbLogger(project="CIFAR100",
