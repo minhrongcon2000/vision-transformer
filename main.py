@@ -73,9 +73,9 @@ pl_trainer = Trainer(accelerator="gpu",
                          ModelCheckpoint("chkpt",
                                          monitor=SmallViT.VAL_TOP1_ACC_KEY,
                                          mode="max"),
-                         WandbLogger(project="CIFAR10",
-                                     name="CIFAR10_VIT"),
-                     ])
+                     ],
+                     logger=WandbLogger(project="CIFAR10",
+                                        name="CIFAR10_VIT"))
 pl_trainer.fit(model=model,
                train_dataloaders=train_loader,
                val_dataloaders=val_loader)
