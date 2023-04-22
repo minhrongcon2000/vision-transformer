@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from torchvision.datasets import CIFAR10
+from torchvision.datasets import CIFAR100
 
 from model import SmallViT
 
@@ -42,14 +42,14 @@ test_transform = transforms.Compose(
     ]
 )
 
-train_dataset = CIFAR10(root="./data",
-                        train=True,
-                        download=True,
-                        transform=train_transform)
-val_dataset = CIFAR10(root="./data",
-                      train=False,
-                      download=True,
-                      transform=test_transform)
+train_dataset = CIFAR100(root="./data",
+                         train=True,
+                         download=True,
+                         transform=train_transform)
+val_dataset = CIFAR100(root="./data",
+                       train=False,
+                       download=True,
+                       transform=test_transform)
 
 train_loader = DataLoader(train_dataset,
                           batch_size=128,
@@ -64,7 +64,7 @@ model = SmallViT(embed_dim=256,
                  num_channels=3,
                  patch_size=8,
                  num_patches=17,
-                 num_classes=10)
+                 num_classes=100)
 
 pl_trainer = Trainer(accelerator="gpu",
                      max_epochs=100,
@@ -74,8 +74,8 @@ pl_trainer = Trainer(accelerator="gpu",
                                          monitor=SmallViT.VAL_TOP1_ACC_KEY,
                                          mode="max"),
                      ],
-                     logger=WandbLogger(project="CIFAR10",
-                                        name="CIFAR10_VIT"))
+                     logger=WandbLogger(project="CIFAR100",
+                                        name="CIFAR100_VIT"))
 pl_trainer.fit(model=model,
                train_dataloaders=train_loader,
                val_dataloaders=val_loader)
