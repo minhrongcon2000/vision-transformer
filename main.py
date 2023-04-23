@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR100, CIFAR10
 
 from model import ViT
 
@@ -19,6 +19,13 @@ pl.seed_everything(42)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--wandb_api_key", type=str, required=True)
+parser.add_argument("--dataset", required=True, type=str, choices=["CIFAR10", "CIFAR100"])
+parser.add_argument("--embed_dim", type=int, default=1024)
+parser.add_argument("--patch_size", type=int, default=16)
+parser.add_argument("--num_patches", type=int, default=4)
+parser.add_argument("--dim_ff", type=int, default=4096)
+parser.add_argument("--num_transformer_block", type=int, default=24)
+parser.add_argument("--num_heads", type=int, default=16)
 args = vars(parser.parse_args())
 
 os.environ["WANDB_API_KEY"] = args.get("wandb_api_key")
@@ -42,14 +49,14 @@ test_transform = transforms.Compose(
     ]
 )
 
-train_dataset = CIFAR100(root="./data",
-                         train=True,
-                         download=True,
-                         transform=train_transform)
-val_dataset = CIFAR100(root="./data",
-                       train=False,
-                       download=True,
-                       transform=test_transform)
+train_dataset = eval(args.get("dataset"))(root="./data",
+                                          train=True,
+                                          download=True,
+                                          transform=train_transform)
+val_dataset = eval(args.get("dataset"))(root="./data",
+                                        train=False,
+                                        download=True,
+                                        transform=test_transform)
 
 train_loader = DataLoader(train_dataset,
                           batch_size=128,
@@ -60,14 +67,14 @@ val_loader = DataLoader(val_dataset,
                         shuffle=False,
                         num_workers=4)
 
-model = ViT(embed_dim=1024,
+model = ViT(embed_dim=args.get("embed_dim"),
             num_channels=3,
-            patch_size=16,
-            num_patches=4,
-            num_classes=100,
-            num_heads=16,
-            dim_feedforward=4096,
-            num_transformer_block=24)
+            patch_size=args.get("patch_size"),
+            num_patches=args.get("num_patches"),
+            num_classes=100 if args.get("dataset") == "CIFAR100" else 10,
+            num_heads=args.get("num_heads"),
+            dim_feedforward=args.get("dim_ff"),
+            num_transformer_block=args.get("num_transformer_block"))
 
 pl_trainer = Trainer(accelerator="gpu",
                      max_epochs=100,
