@@ -84,8 +84,8 @@ pl_trainer = Trainer(accelerator="gpu",
                                          monitor=ViT.VAL_TOP1_ACC_KEY,
                                          mode="max"),
                      ],
-                     logger=WandbLogger(project="CIFAR100",
-                                        name="CIFAR100_VIT"))
+                     logger=WandbLogger(project=args.get("dataset"),
+                                        name=f"{args.get('dataset')}_VIT"))
 pl_trainer.fit(model=model,
                train_dataloaders=train_loader,
                val_dataloaders=val_loader)
