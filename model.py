@@ -128,9 +128,9 @@ class ViT(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
-            self.parameters(), lr=4e-4, betas=(0.9, 0.999))
-        lr_scheduler = torch.optim.lr_scheduler.LinearLR(
-            optimizer, start_factor=0.1)
+            self.parameters(), lr=3e-4, betas=(0.9, 0.999))
+        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
+            optimizer, milestones=[100, 150], gamma=0.1)
         return [optimizer], [lr_scheduler]
 
     def on_train_epoch_end(self) -> None:
