@@ -127,8 +127,10 @@ class ViT(pl.LightningModule):
         self.log(self.VAL_TOP5_ACC_KEY, self.val_top5_acc)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=4e-4)
-        lr_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1)
+        optimizer = torch.optim.Adam(
+            self.parameters(), lr=4e-4, betas=(0.9, 0.999))
+        lr_scheduler = torch.optim.lr_scheduler.LinearLR(
+            optimizer, start_factor=0.1)
         return [optimizer], [lr_scheduler]
 
     def on_train_epoch_end(self) -> None:
