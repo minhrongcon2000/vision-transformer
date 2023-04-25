@@ -42,7 +42,8 @@ class ViT(pl.LightningModule):
             encoder_layer=nn.TransformerEncoderLayer(d_model=self.embed_dim,
                                                      nhead=self.num_heads,
                                                      dim_feedforward=self.dim_feedforward,
-                                                     activation=F.gelu),
+                                                     activation=F.gelu,
+                                                     norm_first=True),
             num_layers=self.num_transformer_block,
         )
 
@@ -127,8 +128,7 @@ class ViT(pl.LightningModule):
         self.log(self.VAL_TOP5_ACC_KEY, self.val_top5_acc)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
-            self.parameters(), lr=3e-4, betas=(0.9, 0.999))
+        optimizer = torch.optim.SGD(self.parameters(), lr=3e-4, momentum=0.99)
         lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=[100, 150], gamma=0.1)
         return [optimizer], [lr_scheduler]

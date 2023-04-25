@@ -59,11 +59,11 @@ val_dataset = eval(args.get("dataset"))(root="./data",
                                         transform=test_transform)
 
 train_loader = DataLoader(train_dataset,
-                          batch_size=128,
+                          batch_size=256,
                           shuffle=True,
                           num_workers=4)
 val_loader = DataLoader(val_dataset,
-                        batch_size=128,
+                        batch_size=256,
                         shuffle=False,
                         num_workers=4)
 
