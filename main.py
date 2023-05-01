@@ -1,6 +1,7 @@
 import argparse
 import os
 import ssl
+from collections import OrderedDict
 
 import torch
 import pytorch_lightning as pl
@@ -82,12 +83,12 @@ model = ViT(embed_dim=args.get("embed_dim"),
 if args["chkpt"] is not None:
     mlp_head_keys = ['mlp_head.0.weight', 'mlp_head.0.bias',
                      'mlp_head.1.weight', 'mlp_head.1.bias']
-    model_dict = torch.load(args["chkpt"])
-    
+    model_dict: OrderedDict = torch.load(args["chkpt"])['state_dict']
+
     for key in mlp_head_keys:
-        model_dict['state_dict'].pop(key)
-    
-    model.load_state_dict(model_dict)
+        model_dict.pop(key)
+
+    model.load_state_dict(model_dict, strict=False)
 
 pl_trainer = Trainer(accelerator="gpu",
                      max_epochs=100,
