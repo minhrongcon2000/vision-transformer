@@ -2,6 +2,7 @@ import argparse
 import os
 import ssl
 
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -19,13 +20,15 @@ pl.seed_everything(42)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--wandb_api_key", type=str, required=True)
-parser.add_argument("--dataset", required=True, type=str, choices=["CIFAR10", "CIFAR100"])
+parser.add_argument("--dataset", required=True, type=str,
+                    choices=["CIFAR10", "CIFAR100"])
 parser.add_argument("--embed_dim", type=int, default=1024)
 parser.add_argument("--patch_size", type=int, default=16)
 parser.add_argument("--num_patches", type=int, default=4)
 parser.add_argument("--dim_ff", type=int, default=4096)
 parser.add_argument("--num_transformer_block", type=int, default=24)
 parser.add_argument("--num_heads", type=int, default=16)
+parser.add_argument("--chkpt", type=str)
 args = vars(parser.parse_args())
 
 os.environ["WANDB_API_KEY"] = args.get("wandb_api_key")
@@ -75,6 +78,16 @@ model = ViT(embed_dim=args.get("embed_dim"),
             num_heads=args.get("num_heads"),
             dim_feedforward=args.get("dim_ff"),
             num_transformer_block=args.get("num_transformer_block"))
+
+if args["chkpt"] is not None:
+    mlp_head_keys = ['mlp_head.0.weight', 'mlp_head.0.bias',
+                     'mlp_head.1.weight', 'mlp_head.1.bias']
+    model_dict = torch.load(args["chkpt"])
+    
+    for key in mlp_head_keys:
+        model_dict['state_dict'].pop(key)
+    
+    model.load_state_dict(model_dict)
 
 pl_trainer = Trainer(accelerator="gpu",
                      max_epochs=100,
