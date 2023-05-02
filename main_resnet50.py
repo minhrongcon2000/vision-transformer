@@ -87,7 +87,7 @@ pl_trainer = Trainer(accelerator="gpu",
                                          mode="max"),
                      ],
                      logger=WandbLogger(project=args.get("dataset"),
-                                        name=f"{args.get('dataset')}_VIT"))
+                                        name=f"{args.get('dataset')}_ResNet50"))
 pl_trainer.fit(model=model,
                train_dataloaders=train_loader,
                val_dataloaders=val_loader)
