@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import CIFAR10, CIFAR100
 
-from model import ViT
+from model import ResNet50
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -23,12 +23,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--wandb_api_key", type=str, required=True)
 parser.add_argument("--dataset", required=True, type=str,
                     choices=["CIFAR10", "CIFAR100"])
-parser.add_argument("--embed_dim", type=int, default=1024)
-parser.add_argument("--patch_size", type=int, default=16)
-parser.add_argument("--num_patches", type=int, default=4)
-parser.add_argument("--dim_ff", type=int, default=4096)
-parser.add_argument("--num_transformer_block", type=int, default=24)
-parser.add_argument("--num_heads", type=int, default=16)
 parser.add_argument("--chkpt", type=str)
 args = vars(parser.parse_args())
 
@@ -71,18 +65,12 @@ val_loader = DataLoader(val_dataset,
                         shuffle=False,
                         num_workers=4)
 
-model = ViT(embed_dim=args.get("embed_dim"),
-            num_channels=3,
-            patch_size=args.get("patch_size"),
-            num_patches=args.get("num_patches"),
-            num_classes=100 if args.get("dataset") == "CIFAR100" else 10,
-            num_heads=args.get("num_heads"),
-            dim_feedforward=args.get("dim_ff"),
-            num_transformer_block=args.get("num_transformer_block"))
+model = ResNet50(
+    num_classes=100 if args.get("dataset") == "CIFAR100" else 10
+)
 
 if args["chkpt"] is not None:
-    mlp_head_keys = ['mlp_head.0.weight', 'mlp_head.0.bias',
-                     'mlp_head.1.weight', 'mlp_head.1.bias']
+    mlp_head_keys = ['resnet_model.fc.weight', 'resnet_model.fc.bias']
     model_dict: OrderedDict = torch.load(args["chkpt"])['state_dict']
 
     for key in mlp_head_keys:
@@ -95,7 +83,7 @@ pl_trainer = Trainer(accelerator="gpu",
                      enable_progress_bar=False,
                      callbacks=[
                          ModelCheckpoint("chkpt",
-                                         monitor=ViT.VAL_TOP1_ACC_KEY,
+                                         monitor=ResNet50.VAL_TOP1_ACC_KEY,
                                          mode="max"),
                      ],
                      logger=WandbLogger(project=args.get("dataset"),
